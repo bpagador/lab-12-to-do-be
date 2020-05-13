@@ -45,10 +45,10 @@ app.get('/api/tasks', async(req, res) => {
 
 app.post('/api/tasks', async(req, res) => {
   const data = await client.query(`
-  INSERT INTO tasks (task, urgency_level, owner_id)
+  INSERT INTO tasks (name, urgency_level, owner_id)
   VALUES ($1, $2, $3)
   RETURNING *
-  `, [req.body.task, req.body.urgency_level, req.userId]);
+  `, [req.body.name, req.body.urgency_level, req.userId]);
 
 
   res.json(data.rows);
