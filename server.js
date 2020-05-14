@@ -37,33 +37,76 @@ app.use('/api', ensureAuth);
 
 
 app.get('/api/tasks', async(req, res) => {
-  const data = await client.query('SELECT * from tasks WHERE owner_id=$1', [req.userId]);
+  try {
+    const data = await client.query(`
+    SELECT * from tasks 
+    WHERE owner_id=$1
+    ORDER BY $2
+    `, [req.userId, req.body.id]);
 
-
-  res.json(data.rows);
+    res.json(data.rows);
+  }
+  catch(err) {
+    console.log(err);
+    res.status(500).json({
+      error: err.message || err
+    });
+  }  
 });
 
 app.post('/api/tasks', async(req, res) => {
-  const data = await client.query(`
-  INSERT INTO tasks (name, urgency_level, owner_id)
-  VALUES ($1, $2, $3)
-  RETURNING *
-  `, [req.body.name, req.body.urgency_level, req.userId]);
+  try {
+    const data = await client.query(`
+      INSERT INTO tasks (name, urgency_level, owner_id)
+      VALUES ($1, $2, $3)
+      RETURNING *
+      `, [req.body.name, req.body.urgency_level, req.userId]);
 
-
-  res.json(data.rows);
+    res.json(data.rows);
+  } 
+  catch(err) {
+    console.log(err);
+    res.status(500).json({
+      error: err.message || err
+    });
+  }  
 });
 
 app.put('/api/tasks/:id', async(req, res) => {
-  const data = await client.query(`
+  try {
+    const data = await client.query(`
   UPDATE tasks
   SET is_complete=true
   WHERE id=$1 AND owner_id=$2
   RETURNING *
   `, [req.params.id, req.userId]);
 
+    res.json(data.rows);
+  }
+  catch(err) {
+    console.log(err);
+    res.status(500).json({
+      error: err.message || err
+    });
+  }
+});
 
-  res.json(data.rows);
+app.delete('/api/tasks/:id', async(req, res) => {
+  try {
+    const data = await client.query(`
+    DELETE from tasks
+    WHERE id=$1 AND owner_id=$2
+    RETURNING *
+    `, [req.params.id, req.userId]);
+
+    res.json(data.rows);
+  }
+  catch(err) {
+    console.log(err);
+    res.status(500).json({
+      error: err.message || err
+    });
+  }
 });
 
 
